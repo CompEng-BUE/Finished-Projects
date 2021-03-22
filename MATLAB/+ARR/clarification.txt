@@ -1,0 +1,109 @@
+definitions:
+    - config (1x20 matrix):
+        columns represent the following:
+            01: propability_foreigner
+            02: propability_nLuggage
+            03: LB_interArrivalTime
+            04: UB_interarrivalTime
+            05: LB_delayToVisaClr
+            06: UB_delayToVisaClr
+            07: avg_visaClrServTime
+            08: LB_delayToLuggageArea
+            09: UB_delayToLuggageArea
+            10: LB_luggageDelay
+            11: UB_luggageDelay
+            12: LB_delayToSecCus
+            13: UB_delayToSecCus
+            14: avg_securityCusServTime
+            15: LB_delayToGate
+            16: UB_delayToGate
+            17: propability_rejection
+            18: nQueues_foreigner
+            19: nQueues_local
+            20: nQueues_secCus
+
+    - passengers (100x11 matrix):
+        each row represents 1 passenger
+        columns represent the following:
+            01: isForeigner
+            02: hasLuggage
+            03: interarrivalTime
+            04: delayToVisaClr
+            05: visaClrServTime
+            06: delayToLuggageArea
+            07: luggageDelay
+            08: delayToSecCus
+            09: secCusServTime
+            10: delayToGate
+            11: isRejected
+
+    - passengersTiming (100x13 matrix):
+        each row represents 1 passenger
+        columns represent the following:
+            01: arrivalTime
+            02: visaClrCounterType
+            03: visaClrQueueNumber
+            04: visaClrQueueArrivalTime
+            05: visaClrServStart
+            06: visaClrServEND
+            07: luggageAreaArrivalTime
+            08: luggageAreaDepartureTime
+            09: secCusQueueNumber
+            10: secCusQueueArrivalTime
+            11: secCusServStart
+            12: secCusServEnd
+            13: gateArrivalTime
+
+    - plane (1x5 cells):
+        columns represent the following:
+            1: base time
+            2: passengers
+            3: passengersTiming
+            4: queuesStats
+            5: otherStats
+
+    - company (1x4 cells):
+        columns represent the following:
+            1: name
+            2: planes (list of plane)
+            3: queuesStats
+            4: otherStats
+
+    - day (1x3 cell):
+        columns represent the following:
+            1: companies (list of company)
+            2: queuesStats
+            3: otherStats
+
+    - simulation (1x3 cells):
+        columns represent the following:
+            1: days (list of day)
+            2: queuesStats
+            3: otherStats
+
+    - queuesStats (4xn matrix):
+        each column represents 1 queue
+        row represent the following:
+            1: Wq
+            2: Ws
+            3: Lq
+            4: idlenessPercentage
+
+    - otherStats (1x1 vector):
+        columns represent the following:
+            1: nRejected
+____________________________________________________________________________________________________
+
+functions:
+    01: all_passengers = initializePassengers(nCompanies, config);
+    02: [queueNumber, serviceStartTime, serviceEndTime] = modelQueue(arrivalTime, serviceTime, nQueues, nPassengers);
+    03: all_passengersTiming = getPassengersTiming(all_passengers, baseTime, nCompanies, config);   [calls 2]
+    04: [queuesStats, otherStats] = getPlaneStat(passengersTiming, config);
+    05: plane = initializePlane(baseTime, passengers_and_timing, config);                           [calls 4]
+    06: [queuesStats, otherStats] = getCompanyStat(planes);
+    07: company = initializeCompany(name, passengers_and_timing, config);                           [calls 5, 6]
+    08: queuesStats = getQueueStat(arrivalTime, serviceStartTime, serviceEndTime);
+    09: [queuesStats, otherStats] = getDayStat(passengersTiming, config);                           [calls 8]
+    10: day = initializeDay(names, config);                                                         [calls 1, 3, 7, 9]
+    11: [queuesStats, otherStats] = getSimulationStat(days);
+    12: simulation = initializeSimulation(nDays, names, config);                                    [calls 10, 11]

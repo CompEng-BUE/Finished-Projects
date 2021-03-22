@@ -1,0 +1,99 @@
+definitions:
+    - config (1x14 matrix):
+        columns represent the following:
+            01: vip_count
+            02: propability_nLuggage
+            03: avg_interArrivalTime
+            04: avg_counterServTime_Luggage
+            05: avg_counterServTime_nLuggage
+            06: LB_securityDelay
+            07: UB_securityDelay
+            08: avg_securityServTime
+            09: LB_delayToFirstGate
+            10: UB_delayToFirstGate
+            11: nQueues_eno_luggage
+            12: nQueues_eno_nLuggage
+            13: nQueues_VIP
+            14: nQueues_security
+
+    - passengers (100x7 matrix):
+        each row represents 1 passenger
+        columns represent the following:
+            1: isVip
+            2: hasLuggage
+            3: interarrivalTime
+            4: counterServTime
+            5: delayToSecurity
+            6: securityServTime
+            7: delayToGate
+
+    - passengersTiming (100x10 matrix):
+        each row represents 1 passenger
+        columns represent the following:
+            01: counterType
+            02: counterQueueNumber
+            03: counterQueueArrivalTime (arrivalTime)
+            04: counterServStart
+            05: counterServEnd
+            06: securityQueueNumber
+            07: securityQueueArrivalTime
+            08: securityServStart
+            09: securityServEnd
+            10: gateArrivalTime
+
+    - plane (1x6 cells):
+        columns represent the following:
+            1: baseTime
+            2: gate
+            3: passengers
+            4: passengersTiming
+            5: queuesStats
+            6: otherStats
+
+    - company (1x4 cells):
+        columns represent the following:
+            1: name
+            2: planes (list of plane)
+            3: queuesStats
+            4: otherStats
+
+    - day (1x3 cell):
+        columns represent the following:
+            1: companies (list of company)
+            2: queuesStats
+            3: otherStats
+
+    - simulation (1x3 cells):
+        columns represent the following:
+            1: days (list of day)
+            2: queuesStats
+            3: otherStats
+
+    - queuesStats (4xn matrix):
+        each column represents 1 queue
+        row represent the following:
+            1: Wq
+            2: Ws
+            3: Lq
+            4: idlenessPercentage
+
+    - otherStats (1x2 vector):
+        columns represent the following:
+            1: nExcluded_counter
+            2: nExcluded_gate
+
+____________________________________________________________________________________________________
+
+functions:
+    01: passengers = initializePassengers(gate, config);
+    02: [queueNumber, serviceStartTime, serviceEndTime] = modelQueue(arrivalTime, serviceTime, nQueues, nPassengers);
+    03: passengersTiming = getPassengersTiming(passengers, baseTime, config);           [calls 2]
+    04: queuesStats = getQueueStat(arrivalTime, serviceStartTime, serviceEndTime);
+    05: [queuesStats, otherStats] = getPlaneStat(passengersTiming, config);             [calls 4]
+    06: plane = initializePlane(baseTime, config);                                      [calls 1, 3, 5]
+    07: [queuesStats, otherStats] = getCompanyStat(planes);
+    08: company = initializeCompany(name, config);                                      [calls 6, 7]
+    09: [queuesStats, otherStats] = getDayStat(companies);
+    10: day = initializeDay(names, config);                                             [calls 8, 9]
+    11: [queuesStats, otherStats] = getSimulationStat(days);
+    12: simulation = initializeSimulation(nDays, names, config);                        [calls 10, 11]
